@@ -32,6 +32,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Web;
+using DotNetNuke.Abstractions;
 
 namespace DotNetNuke.Authentication.Azure.B2C.Common
 {
@@ -48,16 +49,17 @@ namespace DotNetNuke.Authentication.Azure.B2C.Common
         /// </summary>
         /// <param name="portalSettings">The portal settings.</param>
         /// <param name="request">The request.</param>
+        /// <param name="manager">navigation services</param>
         /// <returns>The URL for the login page</returns>
         /// <exception cref="ArgumentNullException">if <paramref name="portalSettings"/> or <paramref name="request"/> is null.</exception>
-        public static string GetLoginUrl(PortalSettings portalSettings, HttpRequest request)
+        public static string GetLoginUrl(PortalSettings portalSettings, HttpRequest request, INavigationManager manager)
         {
             Requires.NotNull("portalSettings", portalSettings);
             Requires.NotNull("request", request);
 
-            int tabId = portalSettings.ActiveTab.TabID;
-            string controlKey = "Login";
-            string returnUrl = request.RawUrl;
+            var tabId = portalSettings.ActiveTab.TabID;
+            var controlKey = "Login";
+            var returnUrl = request.RawUrl;
             if (returnUrl.IndexOf("?returnurl=", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 returnUrl = returnUrl.Substring(0, returnUrl.IndexOf("?returnurl=", StringComparison.OrdinalIgnoreCase));
@@ -78,7 +80,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Common
             }
 
             // else current tab
-            return Globals.NavigateURL(tabId, controlKey, new string[] { "returnUrl=" + returnUrl });            
+            return manager.NavigateURL(tabId, controlKey, new string[] { "returnUrl=" + returnUrl });            
         }
 
         public static string GetLoginUrl(int portalId, string culture, HttpRequest request)
@@ -86,9 +88,9 @@ namespace DotNetNuke.Authentication.Azure.B2C.Common
             Requires.NotNull("request", request);
 
             var portalSettings = new PortalSettings(portalId);
-            int tabId = portalSettings.ActiveTab.TabID;
-            string controlKey = "Login";
-            string returnUrl = request.RawUrl;
+            var tabId = portalSettings.ActiveTab.TabID;
+            var controlKey = "Login";
+            var returnUrl = request.RawUrl;
             if (returnUrl.IndexOf("?returnurl=", StringComparison.OrdinalIgnoreCase) > -1)
             {
                 returnUrl = returnUrl.Substring(0, returnUrl.IndexOf("?returnurl=", StringComparison.OrdinalIgnoreCase));
@@ -151,8 +153,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Common
 
             return (usernameMapping != null) ? usernameMapping.B2cClaimName : "sub";
         }
-         
-
+        
         internal static string GetTabModuleSetting(int tabModuleId, string settingKey, string defaultValue = "")
         {
             var settings = ModuleController.Instance.GetTabModule(tabModuleId).TabModuleSettings;
@@ -173,7 +174,5 @@ namespace DotNetNuke.Authentication.Azure.B2C.Common
                 .Skip(1)
                 .Aggregate("", (current, next) => current + " " + next);
         }
-
     }
-
 }

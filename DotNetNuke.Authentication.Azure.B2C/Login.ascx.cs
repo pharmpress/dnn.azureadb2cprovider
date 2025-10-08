@@ -26,7 +26,9 @@
 using System;
 using System.Collections.Specialized;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Web;
+using DotNetNuke.Abstractions;
 using DotNetNuke.Authentication.Azure.B2C.Components;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -101,7 +103,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
                 if (Request["error_description"]?.IndexOf("AADB2C90091") > -1)
                 {
                     _logger.Debug($"Login.loginButton_Click: AADB2C90091: The user has cancelled entering self-asserted information. User clicked on Cancel when resetting the password => Redirect to the login page");
-                    Response.Redirect(Common.Utils.GetLoginUrl(PortalSettings.Current, Request), true);
+                    Response.Redirect(Common.Utils.GetLoginUrl(PortalSettings.Current, Request, navigationManager), true);
                 }
                 else
                 {
