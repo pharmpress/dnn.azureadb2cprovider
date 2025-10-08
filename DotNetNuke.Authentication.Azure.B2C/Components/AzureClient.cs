@@ -565,12 +565,10 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                     if (Logger.IsInfoEnabled) Logger.Info($"User {impersonatorUsername} has impersonated as {username}");
                     SetCurrentPrincipal(new GenericPrincipal(new GenericIdentity(user.Username, _b2cController.SchemeType), null), HttpContext.Current);
 
-                    EventLogController.Instance.AddLog("User Impersonation", $"User {impersonatorUsername} has impersonated as {username}", 
-                        PortalSettings.Current, user.UserID, EventLogController.EventLogType.USER_IMPERSONATED);
+                    _eventLogService.AddLog("User Impersonation", $"User {impersonatorUsername} has impersonated as {username}", 
+                        PortalSettings.Current, user.UserID, EventLogType.USER_IMPERSONATED);
 
-                    var portal = PortalController.Instance.GetPortal(user.PortalID);
-                    //var portalSettings = new PortalSettings(portal.PortalID);
-                    var httpAlias = PortalAliasController.Instance.GetPortalAliasesByPortalId(portal.PortalID).ToList().FirstOrDefault(x => x.IsPrimary).HTTPAlias;
+                    var httpAlias = _primaryAliasInfo.HttpAlias;
                     return $"{HttpContext.Current.Request.Url.Scheme}://{httpAlias}";
                 }
             }
@@ -663,7 +661,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
 
         public Uri NavigateImpersonation(Uri redirectAfterImpersonateUri = null, string loginHint = "")
         {
-            redirectAfterImpersonateUri = new Uri($"{CallbackUri.Scheme}://{PortalSettings.Current.PortalAlias.HTTPAlias}/Impersonate");
+            redirectAfterImpersonateUri = new Uri($"{CallbackUri.Scheme}://{_primaryAliasInfo.HttpAlias}/Impersonate");
             var parameters = new List<QueryParameter>
                 {
                     new QueryParameter("scope", Scope),
