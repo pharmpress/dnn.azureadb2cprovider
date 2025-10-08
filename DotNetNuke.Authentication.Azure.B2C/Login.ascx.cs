@@ -29,6 +29,9 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Web;
 using DotNetNuke.Abstractions;
+using DotNetNuke.Abstractions.Application;
+using DotNetNuke.Abstractions.Logging;
+using DotNetNuke.Abstractions.Portals;
 using DotNetNuke.Authentication.Azure.B2C.Components;
 using DotNetNuke.Common;
 using DotNetNuke.Common.Utilities;
@@ -77,7 +80,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
             loginButton.Click += loginButton_Click;
             registerButton.Click += loginButton_Click;
 
-            OAuthClient = new AzureClient(PortalId, Mode);
+            OAuthClient = new AzureClient(PortalId, Mode, eventLogService, portalAliasService);
 
             loginItem.Visible = (Mode == AuthMode.Login);
             registerItem.Visible = (Mode == AuthMode.Register);

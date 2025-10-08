@@ -22,7 +22,8 @@
 #endregion
 
 #region Usings
-
+using DotNetNuke.Abstractions.Logging;
+using DotNetNuke.Abstractions.Portals;
 using DotNetNuke.Authentication.Azure.B2C.Common;
 using DotNetNuke.Authentication.Azure.B2C.Components.Graph;
 using DotNetNuke.Authentication.Azure.B2C.Components.Models;
@@ -40,13 +41,10 @@ using DotNetNuke.Security.Roles;
 using DotNetNuke.Services.Authentication;
 using DotNetNuke.Services.Authentication.OAuth;
 using DotNetNuke.Services.FileSystem;
-using DotNetNuke.Services.Localization;
-using DotNetNuke.Services.Log.EventLog;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
-using System.IdentityModel.Metadata;
 using System.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.IO;
@@ -66,6 +64,10 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
 {
     public class AzureClient : OAuthClientBase
     {
+        private readonly IEventLogService _eventLogService;
+        private readonly IPortalAliasService _portalAliasService;
+        private readonly IPortalAliasInfo _primaryAliasInfo;
+
         public enum PolicyEnum
         {
             SignUpPolicy,
@@ -300,6 +302,15 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         private int GetCalculatedPortalId()
         {
             return Settings.UseGlobalSettings ? -1 : PortalSettings.Current.PortalId;
+        }
+
+        public AzureClient(int portalId, AuthMode mode, IEventLogService eventLogService, IPortalAliasService portalAliasService) : this(portalId, mode)
+        {
+            _eventLogService = eventLogService;
+            _portalAliasService = portalAliasService;
+
+            _primaryAliasInfo =
+                _portalAliasService.GetPortalAliasesByPortalId(portalId).FirstOrDefault(p => p.IsPrimary);
         }
 
         public AzureClient(int portalId, AuthMode mode) 
