@@ -59,7 +59,9 @@ ProfileMappingRow.propTypes = {
     Collapse: PropTypes.func,
     onDelete: PropTypes.func,
     id: PropTypes.string,
-    openId: PropTypes.string
+    openId: PropTypes.string,
+    name: PropTypes.string,
+    children: PropTypes.node
 };
 
 ProfileMappingRow.defaultProps = {
