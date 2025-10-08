@@ -49,6 +49,8 @@ namespace DotNetNuke.Authentication.Azure.B2C
         private ILog _logger = LogManager.GetLogger(typeof(Login));
         private AzureConfig config;
         private INavigationManager navigationManager;
+        private IEventLogService eventLogService;
+        private IPortalAliasService portalAliasService;
 
         protected override string AuthSystemApplicationName => AzureConfig.ServiceName;
 
@@ -68,6 +70,10 @@ namespace DotNetNuke.Authentication.Azure.B2C
         {
             base.OnInit(e);
 
+            navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
+            eventLogService = DependencyProvider.GetService(typeof(IEventLogService)) as IEventLogService;
+            portalAliasService = DependencyProvider.GetService(typeof(IPortalAliasService)) as IPortalAliasService;
+
             loginButton.Click += loginButton_Click;
             registerButton.Click += loginButton_Click;
 
@@ -86,8 +92,6 @@ namespace DotNetNuke.Authentication.Azure.B2C
                 || (Request["error_description"]?.IndexOf("AADB2C90118") > -1)
                 || (Request["error_description"]?.IndexOf("AADB2C90091") > -1))
                 loginButton_Click(null, null);
-
-            navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
         }
 
         private void loginButton_Click(object sender, EventArgs e)
