@@ -24,6 +24,7 @@
 using DotNetNuke.Entities.Modules;
 using System;
 using System.Linq;
+using System.Web.UI.WebControls;
 
 namespace DotNetNuke.Authentication.Azure.B2C.Components
 {
@@ -36,11 +37,21 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 var task = DotNetNuke.Services.Scheduling.SchedulingController.GetSchedule().FirstOrDefault(x => x.TypeFullName == "DotNetNuke.Authentication.Azure.B2C.ScheduledTasks.SyncSchedule, DotNetNuke.Authentication.Azure.B2C");
                 if (task != null)
                 {
-                    DotNetNuke.Services.Scheduling.SchedulingController.UpdateSchedule(task.ScheduleID,
+                    DotNetNuke.Services.Scheduling.SchedulingController.UpdateSchedule(
+                        task.ScheduleID,
                         task.TypeFullName,
-                        task.TimeLapse, task.TimeLapseMeasurement, task.RetryTimeLapse, task.RetryTimeLapseMeasurement,
-                        task.RetainHistoryNum, task.AttachToEvent, task.CatchUpEnabled, true, task.ObjectDependencies,
-                        "," + Environment.MachineName + ",", task.FriendlyName);
+                        task.TimeLapse,
+                        task.TimeLapseMeasurement,
+                        task.RetryTimeLapse,
+                        task.RetryTimeLapseMeasurement,
+                        task.RetainHistoryNum,
+                        task.AttachToEvent,
+                        task.CatchUpEnabled,
+                        task.Enabled,
+                        task.ObjectDependencies,
+                        "," + Environment.MachineName + ",",
+                        task.FriendlyName,
+                        task.ScheduleStartDate); //TODO confirm the date that should be used
                 }
                 return "Success";
             }
