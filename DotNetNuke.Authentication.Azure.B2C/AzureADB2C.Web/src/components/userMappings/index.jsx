@@ -168,7 +168,8 @@ class UserMappings extends Component {
 }
 
 UserMappings.propTypes = {
-    mapping: PropTypes.array
+    mapping: PropTypes.array,
+    dispatch: PropTypes.func.isRequired
 };
 
 

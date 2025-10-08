@@ -229,7 +229,8 @@ class RoleMappings extends Component {
 
 RoleMappings.propTypes = {
     mapping: PropTypes.array,
-    roles: PropTypes.array
+    roles: PropTypes.array,
+    dispatch: PropTypes.func.isRequired
 };
 
 

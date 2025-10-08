@@ -10,6 +10,7 @@ import { SvgIcons } from "@dnnsoftware/dnn-react-common";
 import utils from "../../utils";
 import resx from "../../resources";
 
+
 class ProfileMappings extends Component {
 
     constructor() {
@@ -229,7 +230,8 @@ class ProfileMappings extends Component {
 
 ProfileMappings.propTypes = {
     profileMapping: PropTypes.array,
-    profileProperties: PropTypes.array
+    profileProperties: PropTypes.array,
+    dispatch: PropTypes.func.isRequired
 };
 
 
