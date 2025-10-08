@@ -46,6 +46,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
     {
         private ILog _logger = LogManager.GetLogger(typeof(Login));
         private AzureConfig config;
+        private INavigationManager navigationManager;
 
         protected override string AuthSystemApplicationName => AzureConfig.ServiceName;
 
@@ -83,6 +84,8 @@ namespace DotNetNuke.Authentication.Azure.B2C
                 || (Request["error_description"]?.IndexOf("AADB2C90118") > -1)
                 || (Request["error_description"]?.IndexOf("AADB2C90091") > -1))
                 loginButton_Click(null, null);
+
+            navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
         }
 
         private void loginButton_Click(object sender, EventArgs e)
