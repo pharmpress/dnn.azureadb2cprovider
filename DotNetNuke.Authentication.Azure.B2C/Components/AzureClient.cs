@@ -640,7 +640,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         {            
             var parameters = new List<QueryParameter>
                 {
-                    new QueryParameter("scope", Scope),
+                    new QueryParameter("scope", "openid"),
                     new QueryParameter("client_id", APIKey),
                     new QueryParameter("redirect_uri", string.IsNullOrEmpty(Settings.RedirectUri) 
                         ? HttpContext.Current.Server.UrlEncode(RemoveLocaleFromUrl($"{CallbackUri.Scheme}://{CallbackUri.Host}/UserProfile"))
@@ -834,7 +834,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             {
                 var parameters = new List<QueryParameter>
                 {
-                    new QueryParameter("scope", Scope),
+                    new QueryParameter("scope", "openid"),
                     new QueryParameter("client_id", APIKey),
                     new QueryParameter("redirect_uri", HttpContext.Current.Server.UrlEncode(RemoveLocaleFromUrl(CallbackUri.ToString()))),
                     new QueryParameter("state", HttpContext.Current.Server.UrlEncode(new State() {
@@ -1226,7 +1226,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             {
                 new QueryParameter("grant_type", "authorization_code"),
                 new QueryParameter("client_id", APIKey),
-                new QueryParameter("scope", Scope),
+                new QueryParameter("scope", "openid"),
                 new QueryParameter("code", VerificationCode),
                 new QueryParameter("redirect_uri", HttpContext.Current.Server.UrlEncode(RemoveLocaleFromUrl(CallbackUri.ToString())))
             };
