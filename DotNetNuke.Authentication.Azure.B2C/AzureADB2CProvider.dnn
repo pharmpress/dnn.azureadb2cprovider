@@ -17,7 +17,6 @@
         <dependency type="CoreVersion">09.11.00</dependency>
         <dependency type="ManagedPackage" version="01.00.00">Dnn.PersonaBar.UI</dependency>
       </dependencies>
-
       <components>
         <component type="AuthenticationSystem">
           <authenticationService>
@@ -37,10 +36,11 @@
               <path>bin</path>
               <name>DotNetNuke.Authentication.Azure.B2C.Extensibility.dll</name>
             </assembly>
-            <!--<assembly>
+            <!--Added logging abstractions to remove DnnStartUp warning-->
+            <assembly>
               <path>bin</path>
-              <name>System.IdentityModel.Tokens.Jwt.dll</name>
-            </assembly>-->
+              <name>Microsoft.Extensions.Logging.Abstractions.dll</name>
+            </assembly>
             <assembly>
               <path>bin</path>
               <name>Microsoft.IdentityModel.Protocols.dll</name>
@@ -49,7 +49,32 @@
               <path>bin</path>
               <name>Microsoft.IdentityModel.Protocols.OpenIdConnect.dll</name>
             </assembly>
-            <!--<assembly>
+            <assembly>
+              <path>bin</path>
+              <name>Microsoft.Graph.dll</name>
+            </assembly>
+            <assembly>
+              <path>bin</path>
+              <name>Microsoft.Graph.Core.dll</name>
+            </assembly>
+            <assembly>
+              <path>bin</path>
+              <name>Azure.Core.dll</name>
+            </assembly>
+            <assembly>
+              <path>bin</path>
+              <name>System.Memory.Data.dll</name>
+            </assembly>
+            <assembly>
+              <name>System.Diagnostics.DiagnosticSource.dll</name>
+              <path>bin</path>
+            </assembly>
+            <!-- These assemblies are already in the bin for DNN 10.1.1
+            <assembly>
+              <path>bin</path>
+              <name>System.IdentityModel.Tokens.Jwt.dll</name>
+            </assembly>
+            <assembly>
               <path>bin</path>
               <name>Microsoft.IdentityModel.Tokens.dll</name>
             </assembly>
@@ -60,28 +85,16 @@
             <assembly>
               <path>bin</path>
               <name>Microsoft.IdentityModel.JsonWebTokens.dll</name>
-            </assembly>-->
-            <assembly>
-              <path>bin</path>
-              <name>Microsoft.Graph.dll</name>
             </assembly>
             <assembly>
-              <path>bin</path>
-              <name>Microsoft.Graph.Core.dll</name>
-            </assembly>
-            <!--<assembly>
               <path>bin</path>
               <name>Microsoft.Identity.Client.dll</name>
             </assembly>
             <assembly>
               <path>bin</path>
               <name>Microsoft.Bcl.AsyncInterfaces.dll</name>
-            </assembly>-->
-            <assembly>
-              <path>bin</path>
-              <name>Azure.Core.dll</name>
             </assembly>
-            <!--<assembly>
+            <assembly>
               <path>bin</path>
               <name>System.Text.Json.dll</name>
             </assembly>
@@ -100,16 +113,8 @@
             <assembly>
               <name>System.Memory.dll</name>
               <path>bin</path>
-            </assembly>-->
-            <assembly>
-              <path>bin</path>
-              <name>System.Memory.Data.dll</name>
             </assembly>
             <assembly>
-              <name>System.Diagnostics.DiagnosticSource.dll</name>
-              <path>bin</path>
-            </assembly>
-            <!--<assembly>
               <name>System.Runtime.CompilerServices.Unsafe.dll</name>
               <path>bin</path>
             </assembly>
@@ -139,7 +144,6 @@
             </resourceFile>
           </resourceFiles>
         </component>
-
         <component type="PersonaBarMenu">
           <menu>
             <identifier>Dnn.AzureADB2C</identifier>
@@ -152,7 +156,6 @@
             <order>10</order>
           </menu>
         </component>
-
         <!-- Database scripts -->
         <component type="Script">
           <scripts>
@@ -172,7 +175,6 @@
               <name>01.07.02.SqlDataProvider</name>
               <version>01.07.02</version>
             </script>
-
             <script type="UnInstall" >
               <path>Providers\DataProviders\SqlDataProvider</path>
               <name>uninstall.SqlDataProvider</name>
@@ -180,7 +182,6 @@
             </script>
           </scripts>
         </component>
-
         <component type="Module">
           <desktopModule>
             <moduleName>AzureAD.B2C.UserProfile</moduleName>
@@ -209,7 +210,6 @@
             </moduleDefinitions>
           </desktopModule>
         </component>
-
         <component type="Config">
           <config>
             <configFile>web.config</configFile>
@@ -247,10 +247,8 @@
             </uninstall>
           </config>
         </component>
-
       </components>
     </package>
-
     <package name="AzureADB2CProvider" type="Module" version="01.07.02">
       <friendlyName>DNN Azure Active Directory B2C User Management</friendlyName>
       <description>The DNN Azure Active Directory B2C Provider is an Authentication provider for DNN Platform that uses Azure Active Directory B2C OAuth2 authentication to authenticate users.</description>
@@ -267,9 +265,7 @@
       <dependencies>
         <dependency type="CoreVersion">09.11.00</dependency>
       </dependencies>
-
       <components>
-
         <component type="Module">
           <desktopModule>
             <moduleName>AzureAD.B2C.UserManagement</moduleName>
@@ -303,7 +299,6 @@
                     <helpUrl />
                     <supportsPopUps>True</supportsPopUps>
                   </moduleControl>
-
                 </moduleControls>
               </moduleDefinition>
             </moduleDefinitions>
@@ -311,7 +306,6 @@
         </component>
       </components>
     </package>
-
     <package name="AzureADB2CProvider" type="Module" version="01.07.02">
       <friendlyName>DNN Azure Active Directory B2C Impersonate</friendlyName>
       <description>The DNN Azure Active Directory B2C Provider is an Authentication provider for DNN Platform that uses Azure Active Directory B2C OAuth2 authentication to authenticate users.</description>
@@ -328,9 +322,7 @@
       <dependencies>
         <dependency type="CoreVersion">09.11.00</dependency>
       </dependencies>
-
       <components>
-
         <component type="Module">
           <desktopModule>
             <moduleName>AzureAD.B2C.Impersonate</moduleName>
@@ -361,6 +353,5 @@
         </component>
       </components>
     </package>
-
   </packages>
 </dotnetnuke>
