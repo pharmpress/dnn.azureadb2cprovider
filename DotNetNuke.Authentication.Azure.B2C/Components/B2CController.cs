@@ -86,7 +86,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 var tenantName = azureB2cConfig.TenantName;
                 if (!tenantName.Contains("."))
                 {
-                    tenantName += ".b2clogin.com";
+                    tenantName += ".ciamlogin.com";
                 }
                 var tokenConfigurationUrl = $"https://{tenantName}/{azureB2cConfig.TenantId}/.well-known/openid-configuration?p={ropcPolicyName}";
                 var _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(tokenConfigurationUrl, new OpenIdConnectConfigurationRetriever());

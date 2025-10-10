@@ -325,7 +325,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 var tenantName = Settings.TenantName;
                 if (!tenantName.Contains("."))
                 {
-                    tenantName += ".b2clogin.com";
+                    tenantName += ".ciamlogin.com";
                 }
                 TokenEndpoint = new Uri(string.Format(Utils.GetAppSetting("AzureADB2C.TokenEndpointPattern", TokenEndpointPattern), tenantName, Settings.TenantId));  
                 LogoutEndpoint = new Uri(string.Format(Utils.GetAppSetting("AzureADB2C.LogoutEndpointPattern", LogoutEndpointPattern), tenantName, Settings.TenantId, Settings.SignUpPolicy, UrlEncode(HttpContext.Current.Request.Url.ToString())));
