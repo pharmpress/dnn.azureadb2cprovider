@@ -389,8 +389,8 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             }
             var jsonSerializer = new JavaScriptSerializer();
             var tokenDictionary = jsonSerializer.DeserializeObject(responseText) as Dictionary<string, object>;
-            var token = Convert.ToString(tokenDictionary["access_token"]);
-            JwtIdToken = new JwtSecurityToken(Convert.ToString(tokenDictionary["access_token"]));                        
+            var token = Convert.ToString(tokenDictionary["id_token"]);
+            JwtIdToken = new JwtSecurityToken(Convert.ToString(tokenDictionary["id_token"]));                        
             return token;
         }
 
@@ -1226,7 +1226,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             {
                 new QueryParameter("grant_type", "authorization_code"),
                 new QueryParameter("client_id", APIKey),
-                new QueryParameter("scope", "openid"),
+                new QueryParameter("scope", "openid email profile User.Read"),
                 new QueryParameter("code", VerificationCode),
                 new QueryParameter("redirect_uri", HttpContext.Current.Server.UrlEncode(RemoveLocaleFromUrl(CallbackUri.ToString())))
             };
