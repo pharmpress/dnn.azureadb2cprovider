@@ -40,7 +40,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
             if (SettingsEditor.IsValid && SettingsEditor.IsDirty)
             {
                 var config = (AzureConfig)SettingsEditor.DataSource;
-                AzureConfig.UpdateConfig(config);
+                config.Update(config);
             }
         }
 
