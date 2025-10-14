@@ -143,7 +143,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Services
                 ImpersonatePolicy = settings.ImpersonatePolicy
             };
 
-            AzureConfig.UpdateConfig(config);
+            config.Update(config);
         }
 
         public static void SaveAdvancedSyncSettings(string service, int portalId, AzureADB2CProviderSettings settings)
@@ -159,7 +159,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Services
                 GroupNamePrefixEnabled = settings.GroupNamePrefixEnabled
             };
 
-            AzureConfig.UpdateConfig(config);
+            config.Update(config);
         }
         public static void SaveAdvancedMoreSettings(string service, int portalId, AzureADB2CProviderSettings settings)
         {
@@ -171,7 +171,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Services
                 Scopes = settings.Scopes
             };
 
-            AzureConfig.UpdateConfig(config);
+            config.Update(config);
         }
     }
 }
