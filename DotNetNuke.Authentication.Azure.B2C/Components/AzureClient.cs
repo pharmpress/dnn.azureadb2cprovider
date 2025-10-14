@@ -729,11 +729,11 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 throw new MissingFieldException($"Can't find '{userIdClaim}' claim on token, needed to identify the user");
             }
 
-            var usernamePrefixEnabled = bool.Parse(AzureConfig.GetSetting(AzureConfig.ServiceName, "UsernamePrefixEnabled", portalSettings.PortalId, "true"));
-            var usernameToFind = usernamePrefixEnabled ? $"{AzureConfig.ServiceName}-{userClaim.Value}" : userClaim.Value;
+            //var usernamePrefixEnabled = bool.Parse(Settings.GetSetting(AzureConfig.ServiceName, "UsernamePrefixEnabled", portalSettings.PortalId, "true"));
+            var usernameToFind = Settings.UsernamePrefixEnabled ? $"{AzureConfig.ServiceName}-{userClaim.Value}" : userClaim.Value;
             var userInfo = UserController.GetUserByName(portalSettings.PortalId, usernameToFind);
             // If user doesn't exist on current portal, AuthenticateUser() will create it. 
-            // Otherwise, AuthenticateUser will perform a Response.Redirect, so we have to sinchronize the roles before that, to avoid the ThreadAbortException caused by the Response.Redirect
+            // Otherwise, AuthenticateUser will perform a Response.Redirect, so we have to synchronize the roles before that, to avoid the ThreadAbortException caused by the Response.Redirect
             if (userInfo == null)
             {
                 base.AuthenticateUser(user, portalSettings, IPAddress, addCustomProperties, onAuthenticated);
