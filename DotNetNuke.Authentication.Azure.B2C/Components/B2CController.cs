@@ -249,8 +249,9 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
 
         private static UserInfo GetOrCreateCachedUserInfo(JwtSecurityToken jwt, PortalSettings portalSettings, System.Security.Claims.Claim userClaim)
         {
-            var usernamePrefixEnabled = bool.Parse(AzureConfig.GetSetting(AzureConfig.ServiceName, "UsernamePrefixEnabled", portalSettings.PortalId, "true"));
-            var usernameToFind = usernamePrefixEnabled ? $"{AzureConfig.ServiceName}-{userClaim.Value}" : userClaim.Value;
+            var config = new AzureConfig(AzureConfig.ServiceName, portalSettings.PortalId);
+
+            var usernameToFind = config.UsernamePrefixEnabled ? $"{AzureConfig.ServiceName}-{userClaim.Value}" : userClaim.Value;
             var userInfo = UserController.GetUserByName(portalSettings.PortalId, usernameToFind);
             var tokenKey = ComputeSha256Hash(jwt.RawData);
             var cache = DotNetNuke.Services.Cache.CachingProvider.Instance();
@@ -266,7 +267,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
                 if (userInfo == null)
                 {
                     // If user doesn't exist, create the user
-                    userInfo = userData.ToUserInfo(usernamePrefixEnabled);
+                    userInfo = userData.ToUserInfo(config.UsernamePrefixEnabled);
                     userInfo.PortalID = portalSettings.PortalId;
                     userInfo.Membership.Password = UserController.GeneratePassword();
                     var result = UserController.CreateUser(ref userInfo);
