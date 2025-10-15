@@ -345,6 +345,7 @@
     <Compile Include="Components\Graph\GraphServiceClientFactory.cs" />
     <Compile Include="Components\Graph\Models\NewUser.cs" />
     <Compile Include="Components\IB2CController.cs" />
+    <Compile Include="Components\LoginRequestManager.cs" />
     <Compile Include="Components\MenuController.cs" />
     <Compile Include="Components\Models\ExpiredUserRoleInfo.cs" />
     <Compile Include="Components\Models\ProfileMapping.cs" />
