@@ -116,6 +116,11 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             Log(LoginStageEnum.Finish, LogLevel.Debug);
         }
 
+        internal void LogInit(string url)
+        {
+            Log(LoginStageEnum.Init, LogLevel.Debug, url);
+        }
+
         private (LoginOutcome outcome, string messageOrUri, ModuleMessage.ModuleMessageType messageType) ProcessNonPasswordForgottenIssue()
         {
             if (UserCancelled)
