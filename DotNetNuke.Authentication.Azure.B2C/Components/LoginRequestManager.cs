@@ -1,6 +1,7 @@
 ﻿using DotNetNuke.Abstractions;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Services.Authentication.OAuth;
+using DotNetNuke.UI.Skins.Controls;
 using log4net;
 using Microsoft.Extensions.Logging;
 using System;
@@ -88,7 +89,7 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             };
         }
 
-        internal (LoginOutcome outcome , string messageOrUri) ProcessRequest()
+        internal (LoginOutcome outcome , string messageOrUri, ModuleMessage.ModuleMessageType messageType) ProcessRequest()
         {
             Log(LoginStageEnum.Start, LogLevel.Debug);
 
@@ -100,32 +101,35 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             var result = _oAuthClient.Authorize();
             Log(LoginStageEnum.PostAuthorise, LogLevel.Debug, result);
 
-            if (result != AuthorisationResult.Denied) return (LoginOutcome.None, string.Empty);
+            if (result != AuthorisationResult.Denied) return (LoginOutcome.None, string.Empty, ModuleMessage.ModuleMessageType.GreenSuccess);
 
             Log(LoginStageEnum.Denied, LogLevel.Debug);
 
             return OnErrorUriUnset
-                ? (LoginOutcome.ShowMessage, PrivateConfirmation)
-                : (LoginOutcome.Redirect,
-                    $"{_config.OnErrorUri}?error=Denied&error_description={HttpContext.Current.Server.UrlEncode(DeniedReason)}");
+                ? (LoginOutcome.ShowMessage, PrivateConfirmation, ModuleMessage.ModuleMessageType.YellowWarning)
+                : (LoginOutcome.Redirect, $"{_config.OnErrorUri}?error=Denied&error_description={HttpContext.Current.Server.UrlEncode(DeniedReason)}", ModuleMessage.ModuleMessageType.YellowWarning);
 
         }
 
-        private (LoginOutcome outcome, string messageOrUri) ProcessNonPasswordForgottenIssue()
+        internal void LogEnd()
+        {
+            Log(LoginStageEnum.Finish, LogLevel.Debug);
+        }
+
+        private (LoginOutcome outcome, string messageOrUri, ModuleMessage.ModuleMessageType messageType) ProcessNonPasswordForgottenIssue()
         {
             if (UserCancelled)
             {
                 Log(LoginStageEnum.Cancelled, LogLevel.Debug);
 
-                return (LoginOutcome.Redirect,
-                    Common.Utils.GetLoginUrl(_portalSettings, _request, _navigationManager));
+                return (LoginOutcome.Redirect, Common.Utils.GetLoginUrl(_portalSettings, _request, _navigationManager), ModuleMessage.ModuleMessageType.GreenSuccess);
             }
 
             var errorMessage = Log(LoginStageEnum.OtherProblem, LogLevel.Error, Error, ErrorDescription);
 
             return OnErrorUriUnset
-                ? (LoginOutcome.ShowMessage, errorMessage)
-                : (LoginOutcome.Redirect, $"{_config.OnErrorUri}?error={Error}&error_description={HttpContext.Current.Server.UrlEncode(ErrorDescription)}");
+                ? (LoginOutcome.ShowMessage, errorMessage, ModuleMessage.ModuleMessageType.RedError)
+                : (LoginOutcome.Redirect, $"{_config.OnErrorUri}?error={Error}&error_description={HttpContext.Current.Server.UrlEncode(ErrorDescription)}", ModuleMessage.ModuleMessageType.RedError);
         }
 
         private void UpdatePolicyIfForgottenPassword()
@@ -168,5 +172,6 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
 
             return baseMessage;
         }
+
     }
 }
