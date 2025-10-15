@@ -22,38 +22,29 @@
 #endregion
 
 #region Usings
-
-using System;
-using System.Collections.Specialized;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Web;
 using DotNetNuke.Abstractions;
-using DotNetNuke.Abstractions.Application;
 using DotNetNuke.Abstractions.Logging;
 using DotNetNuke.Abstractions.Portals;
 using DotNetNuke.Authentication.Azure.B2C.Components;
-using DotNetNuke.Common;
-using DotNetNuke.Common.Utilities;
 using DotNetNuke.Entities.Portals;
 using DotNetNuke.Services.Authentication;
 using DotNetNuke.Services.Authentication.OAuth;
-using DotNetNuke.Services.Exceptions;
 using DotNetNuke.Services.Localization;
-using DotNetNuke.UI.Skins.Controls;
 using log4net;
-
+using System;
+using System.Collections.Specialized;
 #endregion
 
 namespace DotNetNuke.Authentication.Azure.B2C
 {
     public partial class Login : OAuthLoginBase
     {
-        private ILog _logger = LogManager.GetLogger(typeof(Login));
-        private AzureConfig config;
-        private INavigationManager navigationManager;
-        private IEventLogService eventLogService;
-        private IPortalAliasService portalAliasService;
+        private readonly ILog _logger = LogManager.GetLogger(typeof(Login));
+        private AzureConfig _config;
+        private INavigationManager _navigationManager;
+        private IEventLogService _eventLogService;
+        private IPortalAliasService _portalAliasService;
+        private LoginRequestManager _loginRequestManager;
 
         protected override string AuthSystemApplicationName => AzureConfig.ServiceName;
 
@@ -61,7 +52,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
 
         protected override void AddCustomProperties(NameValueCollection properties)
         {
-            ((AzureClient) OAuthClient).AddCustomProperties(properties);
+            ((AzureClient)OAuthClient).AddCustomProperties(properties);
         }
 
         protected override UserData GetCurrentUser()
@@ -73,86 +64,54 @@ namespace DotNetNuke.Authentication.Azure.B2C
         {
             base.OnInit(e);
 
-            navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
-            eventLogService = DependencyProvider.GetService(typeof(IEventLogService)) as IEventLogService;
-            portalAliasService = DependencyProvider.GetService(typeof(IPortalAliasService)) as IPortalAliasService;
+            _navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
+            _eventLogService = DependencyProvider.GetService(typeof(IEventLogService)) as IEventLogService;
+            _portalAliasService = DependencyProvider.GetService(typeof(IPortalAliasService)) as IPortalAliasService;
 
-            loginButton.Click += loginButton_Click;
-            registerButton.Click += loginButton_Click;
+            loginButton.Click += LoginButton_Click;
+            registerButton.Click += LoginButton_Click;
 
-            OAuthClient = new AzureClient(PortalId, Mode, eventLogService, portalAliasService);
+            OAuthClient = new AzureClient(PortalId, Mode, _eventLogService, _portalAliasService);
 
-            loginItem.Visible = (Mode == AuthMode.Login);
-            registerItem.Visible = (Mode == AuthMode.Register);
+            loginItem.Visible = Mode == AuthMode.Login;
+            registerItem.Visible = Mode == AuthMode.Register;
 
+            _loginRequestManager = new LoginRequestManager(
+                Request, 
+                OAuthClient, 
+                _logger, 
+                Localization.GetString, 
+                LocalResourceFile, 
+                Localization.SharedResourceFile, 
+                PortalSettings.Current, 
+                _navigationManager, 
+                _config);
 
-            _logger.Debug($"Login.OnInit: Request URL = {Request.RawUrl}");
+            _loginRequestManager.LogInit(Request.RawUrl);
 
-            config = new AzureConfig(AzureConfig.ServiceName, PortalId);
+            _config = new AzureConfig(AzureConfig.ServiceName, PortalId);
             var hasVerificationCode = ((AzureClient)OAuthClient).IsCurrentService() && OAuthClient.HaveVerificationCode();
-            if ((config.AutoRedirect && Request["legacy"] != "1") 
-                || hasVerificationCode 
-                || (Request["error_description"]?.IndexOf("AADB2C90118") > -1)
-                || (Request["error_description"]?.IndexOf("AADB2C90091") > -1))
-                loginButton_Click(null, null);
+            if ((_config.AutoRedirect && Request["legacy"] != "1")
+                || hasVerificationCode
+                || Request["error_description"]?.IndexOf("AADB2C90118") > -1
+                || Request["error_description"]?.IndexOf("AADB2C90091") > -1)
+                LoginButton_Click(null, null);
         }
 
-        private void loginButton_Click(object sender, EventArgs e)
+        private void LoginButton_Click(object sender, EventArgs e)
         {
-            _logger.Debug($"Login.loginButton_Click Start");
-            // AADB2C90118: The user has forgotten their password ==> Login with forgot password policy
-            if (!string.IsNullOrEmpty(Request["error"]) 
-                && !string.IsNullOrEmpty(Request["error_description"]) 
-                && Request["error_description"]?.IndexOf("AADB2C90118") == -1)
+            var (outcome, messageOrUri, messageType) = _loginRequestManager.ProcessRequest();
+
+            if (outcome == LoginRequestManager.LoginOutcome.ShowMessage)
             {
-                // AADB2C90091: The user has cancelled entering self-asserted information. 
-                // User clicked on Cancel when resetting the password => Redirect to the login page
-                if (Request["error_description"]?.IndexOf("AADB2C90091") > -1)
-                {
-                    _logger.Debug($"Login.loginButton_Click: AADB2C90091: The user has cancelled entering self-asserted information. User clicked on Cancel when resetting the password => Redirect to the login page");
-                    Response.Redirect(Common.Utils.GetLoginUrl(PortalSettings.Current, Request, navigationManager), true);
-                }
-                else
-                {
-                    var errorMessage = Localization.GetString("LoginError", LocalResourceFile);
-                    errorMessage = string.Format(errorMessage, Request["error"], Request["error_description"]);
-                    _logger.Error(errorMessage);
-                    if (string.IsNullOrEmpty(config.OnErrorUri))
-                    {
-                        UI.Skins.Skin.AddModuleMessage(this, errorMessage, ModuleMessage.ModuleMessageType.RedError);
-                    }
-                    else
-                    {
-                        Response.Redirect($"{config.OnErrorUri}?error={Request["error"]}&error_description={HttpContext.Current.Server.UrlEncode(Request["error_description"])}");
-                    }
-                }
-            }           
-            else
-            {
-                if (Request["error_description"]?.IndexOf("AADB2C90118") > -1)
-                {
-                    ((AzureClient)OAuthClient).Policy = AzureClient.PolicyEnum.PasswordResetPolicy;
-                }
-                _logger.Debug($"Login.loginButton_Click: Calling Authorize");
-                AuthorisationResult result = OAuthClient.Authorize();
-                _logger.Debug($"Login.loginButton_Click: result={result}");
-                if (result == AuthorisationResult.Denied)
-                {
-                    _logger.Debug($"Login control - Authorization has been denied");
-                    if (string.IsNullOrEmpty(config.OnErrorUri))
-                    {
-                        UI.Skins.Skin.AddModuleMessage(this, Localization.GetString("PrivateConfirmationMessage", Localization.SharedResourceFile), ModuleMessage.ModuleMessageType.YellowWarning);
-                    }
-                    else
-                    {
-                        var errorMessage = !string.IsNullOrEmpty(((AzureClient)OAuthClient).UnauthorizedReason) ? ((AzureClient)OAuthClient).UnauthorizedReason : Localization.GetString("PrivateConfirmationMessage", Localization.SharedResourceFile);
-                        Response.Redirect($"{config.OnErrorUri}?error=Denied&error_description={HttpContext.Current.Server.UrlEncode(errorMessage)}");
-                    }
-                }
+                UI.Skins.Skin.AddModuleMessage(this, messageOrUri, messageType);
             }
-            _logger.Debug($"Login.loginButton_Click End");
+            else if (outcome == LoginRequestManager.LoginOutcome.Redirect)
+            {
+                Response.Redirect(messageOrUri);
+            }
+
+            _loginRequestManager.LogEnd();
         }
-
-
     }
 }
