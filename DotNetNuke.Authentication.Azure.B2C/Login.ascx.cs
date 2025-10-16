@@ -41,9 +41,7 @@ namespace DotNetNuke.Authentication.Azure.B2C
     {
         private readonly ILog _logger = LogManager.GetLogger(typeof(Login));
         private AzureConfig _config;
-        private INavigationManager _navigationManager;
-        private IEventLogService _eventLogService;
-        private IPortalAliasService _portalAliasService;
+
         private LoginRequestManager _loginRequestManager;
 
         protected override string AuthSystemApplicationName => AzureConfig.ServiceName;
@@ -64,17 +62,15 @@ namespace DotNetNuke.Authentication.Azure.B2C
         {
             base.OnInit(e);
 
-            _navigationManager = DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager;
-            _eventLogService = DependencyProvider.GetService(typeof(IEventLogService)) as IEventLogService;
-            _portalAliasService = DependencyProvider.GetService(typeof(IPortalAliasService)) as IPortalAliasService;
-
             loginButton.Click += LoginButton_Click;
             registerButton.Click += LoginButton_Click;
 
-            OAuthClient = new AzureClient(PortalId, Mode, _eventLogService, _portalAliasService);
+            OAuthClient = new AzureClient(PortalId, Mode, DependencyProvider.GetService(typeof(IEventLogService)) as IEventLogService, DependencyProvider.GetService(typeof(IPortalAliasService)) as IPortalAliasService);
 
             loginItem.Visible = Mode == AuthMode.Login;
             registerItem.Visible = Mode == AuthMode.Register;
+
+            _config = new AzureConfig(AzureConfig.ServiceName, PortalId);
 
             _loginRequestManager = new LoginRequestManager(
                 Request, 
@@ -83,19 +79,13 @@ namespace DotNetNuke.Authentication.Azure.B2C
                 Localization.GetString, 
                 LocalResourceFile, 
                 Localization.SharedResourceFile, 
-                PortalSettings.Current, 
-                _navigationManager, 
+                PortalSettings.Current,
+                DependencyProvider.GetService(typeof(INavigationManager)) as INavigationManager, 
                 _config);
 
             _loginRequestManager.LogInit(Request.RawUrl);
 
-            _config = new AzureConfig(AzureConfig.ServiceName, PortalId);
-            var hasVerificationCode = ((AzureClient)OAuthClient).IsCurrentService() && OAuthClient.HaveVerificationCode();
-            if ((_config.AutoRedirect && Request["legacy"] != "1")
-                || hasVerificationCode
-                || Request["error_description"]?.IndexOf("AADB2C90118") > -1
-                || Request["error_description"]?.IndexOf("AADB2C90091") > -1)
-                LoginButton_Click(null, null);
+            if(_loginRequestManager.InitiateLogin) LoginButton_Click(null, null);
         }
 
         private void LoginButton_Click(object sender, EventArgs e)
