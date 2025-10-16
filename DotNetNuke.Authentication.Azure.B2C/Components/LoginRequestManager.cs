@@ -48,6 +48,15 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         internal string Error { get; set; }
         internal string ErrorDescription { get; set; }
 
+        internal bool LegacyOff => _request["legacy"] != "1";
+
+        internal bool VerificationForCurrentService => ((AzureClient)_oAuthClient).IsCurrentService() && _oAuthClient.HaveVerificationCode();
+
+        internal bool InitiateLogin => (_config.AutoRedirect && LegacyOff)
+                                       || VerificationForCurrentService
+                                       || ForgottenPassword
+                                       || UserCancelled;
+
         internal bool ForgottenPassword =>
             Error.IndexOf(ForgottenPasswordErrorCode, StringComparison.OrdinalIgnoreCase) == 0;
 
