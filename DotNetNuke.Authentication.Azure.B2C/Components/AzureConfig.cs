@@ -44,6 +44,8 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         private readonly IHostSettingsService _hostSettingsService;
         private readonly IPortalController _portalController;
         private readonly Dictionary<string, string> _portalSettings;
+        private readonly string _service;
+        private readonly int _portalId;
         private const string _cacheKey = "Authentication";
 
         #region config items
@@ -110,68 +112,74 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
         {
             _hostSettingsService = DependencyProvider.GetService(typeof(IHostSettingsService)) as IHostSettingsService ?? throw new InvalidOperationException();
             _portalController = DependencyProvider.GetService(typeof(IPortalController)) as IPortalController ?? throw new InvalidOperationException();
-            
+
+
+            _service = service;
+            _portalId = portalId;
+
             // Gets the settings scope (global or per portal)
-            UseGlobalSettings = bool.Parse(_hostSettingsService.GetString(Service + "_UseGlobalSettings", "false"));
+            UseGlobalSettings = bool.Parse(_hostSettingsService.GetString(_service + "_UseGlobalSettings", "false"));
 
             if (!UseGlobalSettings)
             {
-                _portalSettings = _portalController.GetPortalSettings(portalId);
+                _portalSettings = _portalController.GetPortalSettings(_portalId);
             }
 
             // Loads the scoped settings
-            APIKey = GetScopedSetting(Service + ApiKeyNamePart, portalId, "");
-            APISecret = GetScopedSetting(Service + ApiSecretNamePart, portalId, "");
-            RedirectUri = GetScopedSetting(Service + "_RedirectUri", portalId, "");
-            OnErrorUri = GetScopedSetting(Service + "_OnErrorUri", portalId, "");
-            TenantName = GetScopedSetting(Service + "_TenantName", portalId, "");
-            TenantId = GetScopedSetting(Service + "_TenantId", portalId, "");
-            SignUpPolicy = GetScopedSetting(Service + "_SignUpPolicy", portalId, "");
-            ProfilePolicy = GetScopedSetting(Service + "_ProfilePolicy", portalId, "");
-            PasswordResetPolicy = GetScopedSetting(Service + "_PasswordResetPolicy", portalId, "");
-            AutoRedirect = bool.Parse(GetScopedSetting(Service + "_AutoRedirect", portalId, "false"));
-            Enabled = bool.Parse(GetScopedSetting(Service + "_Enabled", portalId, "false"));
-            AADApplicationId = GetScopedSetting(Service + "_AADApplicationId", portalId, "");
-            AADApplicationKey = GetScopedSetting(Service + "_AADApplicationKey", portalId, "");
-            JwtAudiences = GetScopedSetting(Service + "_JwtAudiences", portalId, "");
-            RoleSyncEnabled = bool.Parse(GetScopedSetting(Service + "_RoleSyncEnabled", portalId, "false"));
-            UserSyncEnabled = bool.Parse(GetScopedSetting(Service + "_UserSyncEnabled", portalId, "false"));
-            ProfileSyncEnabled = bool.Parse(GetScopedSetting(Service + "_ProfileSyncEnabled", portalId, "false"));
-            JwtAuthEnabled = bool.Parse(GetScopedSetting(Service + "_JwtAuthEnabled", portalId, "false"));
-            APIResource = GetScopedSetting(Service + "_APIResource", portalId, "");
-            Scopes = GetScopedSetting(Service + "_Scopes", portalId, "");
-            B2cApplicationId = GetScopedSetting(Service + "_B2CApplicationId", portalId, "");
-            UsernamePrefixEnabled = bool.Parse(GetScopedSetting(Service + "_UsernamePrefixEnabled", portalId, "true"));
-            GroupNamePrefixEnabled = bool.Parse(GetScopedSetting(Service + "_GroupNamePrefixEnabled", portalId, "true"));
-            RopcPolicy = GetScopedSetting(Service + "_RopcPolicy", portalId, "");
-            ImpersonatePolicy = GetScopedSetting(Service + "_ImpersonatePolicy", portalId, "");
-            AutoAuthorize = bool.Parse(GetScopedSetting(Service + "_AutoAuthorize", portalId, "true"));
-            AutoMatchExistingUsers = bool.Parse(GetScopedSetting(Service + "_AutoMatchExistingUsers", portalId, "false"));
+            APIKey                  = GetScopedSetting(ApiKeyNamePart, "");
+            APISecret               = GetScopedSetting(ApiSecretNamePart, "");
+            RedirectUri             = GetScopedSetting("_RedirectUri", "");
+            OnErrorUri              = GetScopedSetting("_OnErrorUri", "");
+            TenantName              = GetScopedSetting("_TenantName", "");
+            TenantId                = GetScopedSetting("_TenantId", "");
+            SignUpPolicy            = GetScopedSetting("_SignUpPolicy", "");
+            ProfilePolicy           = GetScopedSetting("_ProfilePolicy", "");
+            PasswordResetPolicy     = GetScopedSetting("_PasswordResetPolicy", "");
+            AutoRedirect            = bool.Parse(GetScopedSetting("_AutoRedirect", "false"));
+            Enabled                 = bool.Parse(GetScopedSetting("_Enabled", "false"));
+            AADApplicationId        = GetScopedSetting("_AADApplicationId", "");
+            AADApplicationKey       = GetScopedSetting("_AADApplicationKey", "");
+            JwtAudiences            = GetScopedSetting("_JwtAudiences", "");
+            RoleSyncEnabled         = bool.Parse(GetScopedSetting("_RoleSyncEnabled", "false"));
+            UserSyncEnabled         = bool.Parse(GetScopedSetting("_UserSyncEnabled", "false"));
+            ProfileSyncEnabled      = bool.Parse(GetScopedSetting("_ProfileSyncEnabled", "false"));
+            JwtAuthEnabled          = bool.Parse(GetScopedSetting("_JwtAuthEnabled", "false"));
+            APIResource             = GetScopedSetting("_APIResource", "");
+            Scopes                  = GetScopedSetting("_Scopes", "");
+            B2cApplicationId        = GetScopedSetting("_B2CApplicationId", "");
+            UsernamePrefixEnabled   = bool.Parse(GetScopedSetting("_UsernamePrefixEnabled", "true"));
+            GroupNamePrefixEnabled  = bool.Parse(GetScopedSetting("_GroupNamePrefixEnabled", "true"));
+            RopcPolicy              = GetScopedSetting("_RopcPolicy", "");
+            ImpersonatePolicy       = GetScopedSetting("_ImpersonatePolicy", "");
+            AutoAuthorize           = bool.Parse(GetScopedSetting("_AutoAuthorize", "true"));
+            AutoMatchExistingUsers  = bool.Parse(GetScopedSetting("_AutoMatchExistingUsers", "false"));
             ExpiredRolesSyncEnabled = bool.Parse(ConfigurationManager.AppSettings["AzureB2C_ExpiredRolesSyncEnabled"] ?? "false");
         }
 
-        private string GetScopedSetting(string key, int portalId, string defaultValue)
+        private string GetScopedSetting(string key, string defaultValue)
         {
             return UseGlobalSettings 
-                ? _hostSettingsService.GetString(key, defaultValue) 
-                : _portalSettings.TryGetValue(key, out var result) 
+                ? _hostSettingsService.GetString(_service + key, defaultValue) 
+                : _portalSettings.TryGetValue(_service + key, out var result) 
                     ? result 
                     : defaultValue;
         }
 
-        private void UpdateScopedSetting( int portalId, string key, string value)
+        private void UpdateScopedSetting(string key, string value)
         {
             if (UseGlobalSettings)
-                _hostSettingsService.Update(key, value, true);
+                _hostSettingsService.Update(_service + key, value, true);
             else
-                _portalController.UpdatePortalSetting(portalId, key, value, true, null, false);
+                _portalController.UpdatePortalSetting(_portalId, _service + key, value, true, null, false);
         }
 
+        //TODO: Part of the DataCache, understand usage
         private static string GetCacheKey(string service, int portalId)
         {
-            return _cacheKey + "." + service + "_" + portalId;
+            return $"{_cacheKey}.{service}_{portalId}"; //_cacheKey + "." + service + "_" + portalId;
         }
 
+        //TODO: Verify this usage - called from Settings.ascx.cs
         public new static AzureConfig GetConfig(string service, int portalId)
         {
             var key = GetCacheKey(service, portalId);
@@ -184,61 +192,62 @@ namespace DotNetNuke.Authentication.Azure.B2C.Components
             return config;
         }
 
-        public void Update(AzureConfig config)
+        public void Update(AzureConfig newConfig)
         {
-            _hostSettingsService.Update(config.Service + "_UseGlobalSettings", config.UseGlobalSettings.ToString(),
-                true);
-            UpdateScopedSetting(config.PortalID, config.Service + ApiKeyNamePart, config.APIKey);
-            UpdateScopedSetting(config.PortalID, config.Service + ApiSecretNamePart, config.APISecret);
-            UpdateScopedSetting(config.PortalID, config.Service + "_RedirectUri", config.RedirectUri);
-            UpdateScopedSetting(config.PortalID, config.Service + "_OnErrorUri", config.OnErrorUri);
-            UpdateScopedSetting(config.PortalID, config.Service + "_TenantName", config.TenantName);
-            UpdateScopedSetting(config.PortalID, config.Service + "_TenantId", config.TenantId);
-            UpdateScopedSetting(config.PortalID, config.Service + "_AutoRedirect", config.AutoRedirect.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_Enabled", config.Enabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_SignUpPolicy", config.SignUpPolicy);
-            UpdateScopedSetting(config.PortalID, config.Service + "_ProfilePolicy", config.ProfilePolicy);
-            UpdateScopedSetting(config.PortalID, config.Service + "_PasswordResetPolicy", config.PasswordResetPolicy);
-            UpdateScopedSetting(config.PortalID, config.Service + "_AADApplicationId", config.AADApplicationId);
-            UpdateScopedSetting(config.PortalID, config.Service + "_AADApplicationKey", config.AADApplicationKey);
-            UpdateScopedSetting(config.PortalID, config.Service + "_JwtAudiences", config.JwtAudiences);
-            UpdateScopedSetting(config.PortalID, config.Service + "_RoleSyncEnabled", config.RoleSyncEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_UserSyncEnabled", config.UserSyncEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_ProfileSyncEnabled", config.ProfileSyncEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_JwtAuthEnabled", config.JwtAuthEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_APIResource", config.APIResource);
-            UpdateScopedSetting(config.PortalID, config.Service + "_Scopes", config.Scopes);
-            UpdateScopedSetting(config.PortalID, config.Service + "_UsernamePrefixEnabled", config.UsernamePrefixEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_GroupNamePrefixEnabled", config.GroupNamePrefixEnabled.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_RopcPolicy", config.RopcPolicy);
-            UpdateScopedSetting(config.PortalID, config.Service + "_ImpersonatePolicy", config.ImpersonatePolicy);
-            UpdateScopedSetting(config.PortalID, config.Service + "_AutoAuthorize", config.AutoAuthorize.ToString());
-            UpdateScopedSetting(config.PortalID, config.Service + "_AutoMatchExistingUsers", config.AutoMatchExistingUsers.ToString());
+            _hostSettingsService.Update(_service + "_UseGlobalSettings", UseGlobalSettings.ToString(), true);
 
-            config.B2cApplicationId = UpdateB2CApplicationId(config);
+            UpdateScopedSetting(ApiKeyNamePart, newConfig.APIKey);
+            UpdateScopedSetting(ApiSecretNamePart, newConfig.APISecret);
+            UpdateScopedSetting("_RedirectUri", newConfig.RedirectUri);
+            UpdateScopedSetting("_OnErrorUri", newConfig.OnErrorUri);
+            UpdateScopedSetting("_TenantName", newConfig.TenantName);
+            UpdateScopedSetting("_TenantId", newConfig.TenantId);
+            UpdateScopedSetting("_AutoRedirect", newConfig.AutoRedirect.ToString());
+            UpdateScopedSetting("_Enabled", newConfig.Enabled.ToString());
+            UpdateScopedSetting("_SignUpPolicy", newConfig.SignUpPolicy);
+            UpdateScopedSetting("_ProfilePolicy", newConfig.ProfilePolicy);
+            UpdateScopedSetting("_PasswordResetPolicy", newConfig.PasswordResetPolicy);
+            UpdateScopedSetting("_AADApplicationId", newConfig.AADApplicationId);
+            UpdateScopedSetting("_AADApplicationKey", newConfig.AADApplicationKey);
+            UpdateScopedSetting("_JwtAudiences", newConfig.JwtAudiences);
+            UpdateScopedSetting("_RoleSyncEnabled", newConfig.RoleSyncEnabled.ToString());
+            UpdateScopedSetting("_UserSyncEnabled", newConfig.UserSyncEnabled.ToString());
+            UpdateScopedSetting("_ProfileSyncEnabled", newConfig.ProfileSyncEnabled.ToString());
+            UpdateScopedSetting("_JwtAuthEnabled", newConfig.JwtAuthEnabled.ToString());
+            UpdateScopedSetting("_APIResource", newConfig.APIResource);
+            UpdateScopedSetting("_Scopes", newConfig.Scopes);
+            UpdateScopedSetting("_UsernamePrefixEnabled", newConfig.UsernamePrefixEnabled.ToString());
+            UpdateScopedSetting("_GroupNamePrefixEnabled", newConfig.GroupNamePrefixEnabled.ToString());
+            UpdateScopedSetting("_RopcPolicy", newConfig.RopcPolicy);
+            UpdateScopedSetting("_ImpersonatePolicy", newConfig.ImpersonatePolicy);
+            UpdateScopedSetting("_AutoAuthorize", newConfig.AutoAuthorize.ToString());
+            UpdateScopedSetting("_AutoMatchExistingUsers", newConfig.AutoMatchExistingUsers.ToString());
 
-            UpdateConfig((OAuthConfigBase)config);
+            newConfig.B2cApplicationId = UpdateB2CApplicationId(newConfig);
 
-            // Clear config after update
-            DataCache.RemoveCache(GetCacheKey(config.Service, config.PortalID));
+            UpdateConfig((OAuthConfigBase)newConfig);
+
+            //TODO: Understand this DataCache usage
+            //Clear config after update
+            DataCache.RemoveCache(GetCacheKey(_service, _portalId));
         }
 
-        private string UpdateB2CApplicationId(AzureConfig config)
+        private string UpdateB2CApplicationId(AzureConfig newConfig)
         {
             var b2cApplicationId = "";
-            if (!string.IsNullOrEmpty(config.AADApplicationId)
-                && !string.IsNullOrEmpty(config.AADApplicationKey)
-                && !string.IsNullOrEmpty(config.TenantId))
+            if (!string.IsNullOrEmpty(newConfig.AADApplicationId)
+                && !string.IsNullOrEmpty(newConfig.AADApplicationKey)
+                && !string.IsNullOrEmpty(newConfig.TenantId))
             {
-                var graphClient = new Graph.GraphClient(config.AADApplicationId, config.AADApplicationKey, config.TenantId);
+                var graphClient = new Graph.GraphClient(newConfig.AADApplicationId, newConfig.AADApplicationKey, newConfig.TenantId);
                 var extensionApp = graphClient.GetB2CExtensionApplication();
                 b2cApplicationId = extensionApp?.AppId;
                 if (string.IsNullOrEmpty(b2cApplicationId))
                 {
                     throw new ConfigurationErrorsException("Can't find B2C Application on current tenant. Ensure the application 'b2c-extensions-app' exists.");
-                }
+                } 
             }
-            UpdateScopedSetting(config.PortalID, config.Service + "_B2CApplicationId", b2cApplicationId);
+            UpdateScopedSetting("_B2CApplicationId", b2cApplicationId);
             return b2cApplicationId;
         }
     }
